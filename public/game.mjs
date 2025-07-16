@@ -16,6 +16,9 @@ let collectibleY;
 let collectibleId;
 let rank;
 let endGame;
+let touchStartX = 0;
+let touchStartY = 0;
+let touchThreshold = 30;
 
 //Dimentions
 const pad_top = 40;
@@ -202,4 +205,50 @@ window.addEventListener("keyup", e => {
     //player.movePlayer(e.code,0,false)
 });
 
+canvas.addEventListener('touchstart', e => {
+    e.preventDefault(); // Prevent default browser touch behavior (like scrolling)
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+});
 
+canvas.addEventListener('touchmove', e => {
+    e.preventDefault(); // Prevent default browser touch behavior
+    // No action on move, we only care about start and end for simple swipes
+});
+
+canvas.addEventListener('touchend', e => {
+    e.preventDefault(); // Prevent default browser touch behavior
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+
+    // Determine swipe direction based on largest delta and threshold
+    if (Math.abs(deltaX) > Math.abs(deltaY)) { // Horizontal swipe
+        if (Math.abs(deltaX) > touchThreshold) {
+            if (deltaX > 0) {
+                // Swipe Right
+                updateDirection('ArrowRight', true);
+                setTimeout(() => updateDirection('ArrowRight', false), 100); // Briefly activate
+            } else {
+                // Swipe Left
+                updateDirection('ArrowLeft', true);
+                setTimeout(() => updateDirection('ArrowLeft', false), 100); // Briefly activate
+            }
+        }
+    } else { // Vertical swipe
+        if (Math.abs(deltaY) > touchThreshold) {
+            if (deltaY > 0) {
+                // Swipe Down
+                updateDirection('ArrowDown', true);
+                setTimeout(() => updateDirection('ArrowDown', false), 100); // Briefly activate
+            } else {
+                // Swipe Up
+                updateDirection('ArrowUp', true);
+                setTimeout(() => updateDirection('ArrowUp', false), 100); // Briefly activate
+            }
+        }
+    }
+});
