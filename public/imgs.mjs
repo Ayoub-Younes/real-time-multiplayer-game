@@ -1,4 +1,4 @@
-const path = './public/imgs/'
+const path = '/public/imgs/'
 const pokemons =[
     {id:1, url:`${path}pika.webp`},
     {id:2, url:`${path}charmandar.webp`},

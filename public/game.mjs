@@ -5,11 +5,11 @@ import { pokemons, pokeballs,loadImages } from './imgs.mjs'
 const sock = io();
 const canvas = document.getElementById('game-window');
 const ctx = canvas.getContext('2d');
-const font = new FontFace("ARCADECLASSIC", "url(public/ARCADECLASSIC.ttf)");
+const font = new FontFace("ARCADECLASSIC", "url(/public/ARCADECLASSIC.ttf)");
 
 
 let players =[]
-let player;
+let player = null;
 let collectible;
 let collectibleX;
 let collectibleY;
@@ -92,7 +92,11 @@ const getBoard = () => {
             ctx.font = '12pt ARCADECLASSIC'
             ctx.fillStyle = 'white';
             ctx.fillText('Controls:      WASD/Arrow Keys', 10, 30);
-            ctx.fillText(`Score: ${player.score}`, 450, 30);
+            if (player && typeof player.score !== 'undefined') { // Check if player exists AND has a score
+                ctx.fillText(`Score: ${player.score}`, 450, 30);
+            } else {
+                ctx.fillText(`Score: 0`, 450, 30); // Show 0 or nothing if player isn't ready yet
+}
             ctx.fillText(`${rank}`, 530, 30);
             ctx.font = '20pt ARCADECLASSIC';
             ctx.fillText('COIN     RACE', 250, 30);
