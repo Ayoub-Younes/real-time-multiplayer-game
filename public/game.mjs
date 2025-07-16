@@ -109,22 +109,38 @@ const getBoard = () => {
         ctx.fillRect(pad_left + pad_border, pad_top + pad_border, canvas.width - 2*(pad_left+pad_border), canvas.height - pad_top - pad_left - 2*pad_border)
     }
     
+    // Ensure these are at the top level of game.mjs (outside any function)
+    let lastPlayerUpdateTime = 0;
+    const playerUpdateInterval = 20; // milliseconds, for ~20 updates/sec (1000/50)
+
+    // ... (rest of your game.mjs code)
+
     const updatePlayer = ()=>{
+        // This 'if (player)' check is essential to prevent errors if 'player' is null
         if (player){
+            // Player movement logic (your existing code, leave as is)
             if(player.dir.right && player.x < canvas.width - pad_border - pad_left - player_size){player.movePlayer('right',player.speed)}
             if(player.dir.left && player.x > pad_border + pad_left){player.movePlayer('left',player.speed)}
             if(player.dir.up && player.y > pad_border + pad_top){player.movePlayer('up',player.speed)}
             if(player.dir.down && player.y < canvas.height - pad_border - pad_left - player_size){player.movePlayer('down',player.speed)}
             
+            // Collision detection and score update logic (your existing code, leave as is)
             if(collectible.x && player.collision(collectible, collectible_size, player_size)){
                 player.score += collectible.value ;
                 if(player.score >= 50){sock.emit('win',player.id)}
                 collectible = {};
                 sock.emit('collision'); 
             }
-            sock.emit('player update', player)
+
+            // --- THIS IS THE ONLY 'player update' EMIT, AND IT'S THROTTLED ---
+            const currentTime = Date.now();
+            if (currentTime - lastPlayerUpdateTime > playerUpdateInterval) {
+                sock.emit('player update', player); // This is the ONLY place this emit should be
+                lastPlayerUpdateTime = currentTime;
+            }
+            // --- END OF THROTTLED EMIT BLOCK ---
         }
-        
+        // No code here related to player update, outside the if(player) block
     }
 
     const animate = () => {
