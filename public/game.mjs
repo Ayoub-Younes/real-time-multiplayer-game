@@ -19,6 +19,9 @@ let endGame;
 let touchStartX = 0;
 let touchStartY = 0;
 let touchThreshold = 30;
+let isTouching = false; 
+let currentTouchX = 0; 
+let currentTouchY = 0; 
 
 //Dimentions
 const pad_top = 40;
@@ -135,6 +138,45 @@ const getBoard = () => {
                 sock.emit('collision'); 
             }
 
+                    // --- NEW CONTINUOUS TOUCH MOVEMENT LOGIC ---
+        if (isTouching) {
+            const centerX = canvas.width / 2; // Or dynamically calculate center of player/screen for joystick-like control
+            const centerY = canvas.height / 2;
+
+            // For simplicity, let's assume moving finger right of center moves right, etc.
+            // A more sophisticated approach would be a virtual joystick, but this is a start.
+            // Let's use the player's actual position for a 'virtual joystick' relative to player.
+            const playerCenterX = player.x + player_size / 2;
+            const playerCenterY = player.y + player_size / 2;
+
+            const deltaX = currentTouchX - playerCenterX;
+            const deltaY = currentTouchY - playerCenterY;
+
+            // Define a dead zone or sensitivity (adjust as needed)
+            const deadZone = 50; // Pixels from player center
+
+            // Reset all directions first to prevent sticking
+            updateDirection('ArrowUp', false);
+            updateDirection('ArrowDown', false);
+            updateDirection('ArrowLeft', false);
+            updateDirection('ArrowRight', false);
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) { // More horizontal movement
+                if (deltaX > deadZone) {
+                    updateDirection('ArrowRight', true);
+                } else if (deltaX < -deadZone) {
+                    updateDirection('ArrowLeft', true);
+                }
+            } else { // More vertical movement
+                if (deltaY > deadZone) {
+                    updateDirection('ArrowDown', true);
+                } else if (deltaY < -deadZone) {
+                    updateDirection('ArrowUp', true);
+                }
+            }
+        }
+        // --- END NEW CONTINUOUS TOUCH MOVEMENT LOGIC ---
+
             // --- THIS IS THE ONLY 'player update' EMIT, AND IT'S THROTTLED ---
             const currentTime = Date.now();
             if (currentTime - lastPlayerUpdateTime > playerUpdateInterval) {
@@ -216,39 +258,29 @@ canvas.addEventListener('touchmove', e => {
     // No action on move, we only care about start and end for simple swipes
 });
 
+canvas.addEventListener('touchstart', e => {
+    e.preventDefault(); // Prevent default browser touch behavior (like scrolling)
+    isTouching = true;
+    touchStartX = e.touches[0].clientX; // Capture start for potential reference (less critical for continuous)
+    touchStartY = e.touches[0].clientY;
+    currentTouchX = e.touches[0].clientX; // Initialize current position
+    currentTouchY = e.touches[0].clientY;
+});
+
+canvas.addEventListener('touchmove', e => {
+    e.preventDefault(); // Prevent default browser touch behavior
+    if (isTouching) {
+        currentTouchX = e.touches[0].clientX; // Update current position as finger moves
+        currentTouchY = e.touches[0].clientY;
+    }
+});
+
 canvas.addEventListener('touchend', e => {
     e.preventDefault(); // Prevent default browser touch behavior
-
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-
-    const deltaX = touchEndX - touchStartX;
-    const deltaY = touchEndY - touchStartY;
-
-    // Determine swipe direction based on largest delta and threshold
-    if (Math.abs(deltaX) > Math.abs(deltaY)) { // Horizontal swipe
-        if (Math.abs(deltaX) > touchThreshold) {
-            if (deltaX > 0) {
-                // Swipe Right
-                updateDirection('ArrowRight', true);
-                setTimeout(() => updateDirection('ArrowRight', false), 100); // Briefly activate
-            } else {
-                // Swipe Left
-                updateDirection('ArrowLeft', true);
-                setTimeout(() => updateDirection('ArrowLeft', false), 100); // Briefly activate
-            }
-        }
-    } else { // Vertical swipe
-        if (Math.abs(deltaY) > touchThreshold) {
-            if (deltaY > 0) {
-                // Swipe Down
-                updateDirection('ArrowDown', true);
-                setTimeout(() => updateDirection('ArrowDown', false), 100); // Briefly activate
-            } else {
-                // Swipe Up
-                updateDirection('ArrowUp', true);
-                setTimeout(() => updateDirection('ArrowUp', false), 100); // Briefly activate
-            }
-        }
-    }
+    isTouching = false;
+    // When finger lifts, stop all movement
+    updateDirection('ArrowUp', false);
+    updateDirection('ArrowDown', false);
+    updateDirection('ArrowLeft', false);
+    updateDirection('ArrowRight', false);
 });
