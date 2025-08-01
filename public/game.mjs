@@ -11,6 +11,8 @@ const font = new FontFace("ARCADECLASSIC", "url(/public/ARCADECLASSIC.ttf)");
 let players =[]
 let player = null;
 let collectible;
+let pokeballActive = true; // declare this outside update function
+
 let rank;
 let endGame;
 let touchStartX = 0;
@@ -40,7 +42,7 @@ const randomLocation = (size,X,Y) => {
 const newPlayer = (X,Y,id) => {
     const dir={up:false,down:false,left:false,right:false}
     let {x,y} = randomLocation(player_size,X,Y);
-    let playerObj = {x:x, y:y, score:0, id:id, speed:1, dir:dir};
+    let playerObj = {x:x, y:y, score:0, id:id, speed:2, dir:dir};
     return new Player(playerObj)
 }
 
@@ -128,11 +130,21 @@ const getBoard = () => {
             if(player.dir.down && player.y < canvas.height - pad_border - pad_left - player_size){player.movePlayer('down',player.speed)}
             
             // Collision detection and score update logic (your existing code, leave as is)
-            if(collectible.x && player.collision(collectible, collectible_size, player_size)){
-                player.score += collectible.value ;
-                if(player.score >= 50){sock.emit('win',player.id)}
-                collectible = {};
-                sock.emit('collision'); 
+
+            if (pokeballActive && collectible.x && player.collision(collectible, collectible_size, player_size)) {
+                pokeballActive = false;  // **lock** collision detection immediately
+
+                setTimeout(() => {
+                    player.score += collectible.value;
+                    if (player.score >= 50) {
+                        sock.emit('win', player.id);
+                    }
+
+                    collectible = {}; // clear the collectible
+                    sock.emit('collision');
+
+                    pokeballActive = true; // **unlock** after reset
+                }, 500);
             }
 
                     // --- NEW CONTINUOUS TOUCH MOVEMENT LOGIC ---
