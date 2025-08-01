@@ -202,40 +202,56 @@ const getBoard = () => {
 
 
 (() => {
-    const {animate,draw} = getBoard();
-    loadImages()
-    .then(() => {
-        sock.emit('new connection');
+    const { animate, draw } = getBoard();
+    loadImages().then(() => {
+        let ballReady = false;
+
+        // First, listen for pokeball and store it
         sock.on('new pokeball', pokeball => {
-            collectible = newCollectble(pokeball.x, pokeball.y, pokeball.id,pokeball.value);
+            collectible = newCollectble(pokeball.x, pokeball.y, pokeball.id, pokeball.value);
             sock.emit('pokeball registered', collectible);
-        })
+            ballReady = true;
+            trySpawnPlayer(); // only spawn if player is not created yet
+        });
+
+        // Second, listen for player data
         sock.on('new player', playerData => {
             player = newPlayer(playerData.x, playerData.y, playerData.id);
             sock.emit('player registered', player);
+            trySpawnPlayer(); // only spawn if pokeball is already received
         });
 
+        // Define this helper to check when both are ready
+        function trySpawnPlayer() {
+            if (player && collectible && !animate.started) {
+                animate();
+                animate.started = true;
+            }
+        }
+
+        // Remaining listeners stay the same
         sock.on('players display', data => {
             players = data;
-            //rank = players.find(pok => pok.id == player.id).rank
-            rank = player.calculateRank(players)
-            //
-            //img = pokemons.find(pok => pok.id === player.id)?.img;
+            rank = player.calculateRank(players);
         });
-        sock.on('pokeball display',data =>{
+
+        sock.on('pokeball display', data => {
             collectible = data;
-            [collectibleX,collectibleY,collectibleId] = [collectible.x,collectible.y,collectible.id]
+            [collectibleX, collectibleY, collectibleId] = [collectible.x, collectible.y, collectible.id];
         });
-        sock.on('end game',id =>{
-            let restart  = 'Restart  and  try  again.'
-            endGame = id == player.id? 'You  win  !' + restart: 'You  lose!' + restart;
+
+        sock.on('end game', id => {
+            let restart = 'Restart  and  try  again.';
+            endGame = id == player.id ? 'You  win  !' + restart : 'You  lose!' + restart;
         });
-        animate();
-    })
-    .catch(error => {
+
+        // Emit the connection request after handlers are set up!
+        sock.emit('new connection');
+
+    }).catch(error => {
         console.error('Error loading images:', error);
     });
-})()
+})();
 
 
 window.addEventListener("keydown", e => {
