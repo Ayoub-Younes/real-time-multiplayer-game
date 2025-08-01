@@ -11,9 +11,6 @@ const font = new FontFace("ARCADECLASSIC", "url(/public/ARCADECLASSIC.ttf)");
 let players =[]
 let player = null;
 let collectible;
-let collectibleX;
-let collectibleY;
-let collectibleId;
 let rank;
 let endGame;
 let touchStartX = 0;
@@ -83,11 +80,11 @@ const getBoard = () => {
             });
         }
         
-        if (collectible && collectibleX) {
-            let img = pokeballs.find(ball => ball.id === collectibleId)?.img;
-                if (img) {
-                    ctx.drawImage(img, collectibleX, collectibleY, collectible_size, collectible_size)
-                }
+        if (collectible && collectible.x !== undefined && collectible.y !== undefined) {
+            let img = pokeballs.find(ball => ball.id === collectible.id)?.img;
+            if (img) {
+                ctx.drawImage(img, collectible.x, collectible.y, collectible_size, collectible_size);
+            }
         }
     };
     
@@ -237,7 +234,6 @@ const getBoard = () => {
 
         sock.on('pokeball display', data => {
             collectible = data;
-            [collectibleX, collectibleY, collectibleId] = [collectible.x, collectible.y, collectible.id];
         });
 
         sock.on('end game', id => {

@@ -30,25 +30,6 @@ class Player {
     
   }
 
-  /*
-  movePlayer(dir, speed , isPressed = false) {
-    //dir = 'Arrow' + dir.charAt(0).toUpperCase() + dir.slice(1);
-    switch (dir){
-      case'ArrowUp' :
-        this.dir.up = isPressed
-        break;
-      case'ArrowDown' :
-        this.dir.down = isPressed
-        break;
-      case'ArrowLeft' :
-        this.dir.left = isPressed
-        break;
-      case'ArrowRight' :
-        this.dir.right = isPressed
-        break;
-    }
-    
-  }*/
   
   collision(item) {
     let rightCol = this.x < item.x + item.size;
