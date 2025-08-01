@@ -132,10 +132,7 @@ const getBoard = () => {
                 player.score += collectible.value ;
                 if(player.score >= 50){sock.emit('win',player.id)}
                 collectible = {};
-
-                    setTimeout(() => {
                 sock.emit('collision'); 
-    }, 1000);
             }
 
                     // --- NEW CONTINUOUS TOUCH MOVEMENT LOGIC ---
