@@ -128,18 +128,14 @@ const getBoard = () => {
             if(player.dir.down && player.y < canvas.height - pad_border - pad_left - player_size){player.movePlayer('down',player.speed)}
             
             // Collision detection and score update logic (your existing code, leave as is)
-            if (collectible.x) {
-            // Delay collision detection to next animation frame to sync rendering and logic
-            requestAnimationFrame(() => {
-                if (player.collision(collectible, collectible_size, player_size)) {
-                player.score += collectible.value;
-                if (player.score >= 50) {
-                    sock.emit('win', player.id);
-                }
+            if(collectible.x && player.collision(collectible, collectible_size, player_size)){
+                player.score += collectible.value ;
+                if(player.score >= 50){sock.emit('win',player.id)}
                 collectible = {};
-                sock.emit('collision');
-                }
-            });
+
+                    setTimeout(() => {
+                sock.emit('collision'); 
+    }, 1000);
             }
 
                     // --- NEW CONTINUOUS TOUCH MOVEMENT LOGIC ---

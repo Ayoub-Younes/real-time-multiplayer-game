@@ -91,7 +91,7 @@ io.on('connection',(sock) => {
   sock.on('pokeball registered', collectible => {
     pokeball = collectible;
     pokeball.state = true;
-    setTimeout(() => io.emit('pokeball display',pokeball),100);
+    io.emit('pokeball display',pokeball);
   });
   
   sock.on('player registred',pokemon => {
