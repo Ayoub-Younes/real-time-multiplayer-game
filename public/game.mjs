@@ -40,7 +40,7 @@ const randomLocation = (size,X,Y) => {
 const newPlayer = (X,Y,id) => {
     const dir={up:false,down:false,left:false,right:false}
     let {x,y} = randomLocation(player_size,X,Y);
-    let playerObj = {x:x, y:y, score:0, id:id, speed:4, dir:dir};
+    let playerObj = {x:x, y:y, score:0, id:id, speed:1, dir:dir};
     return new Player(playerObj)
 }
 
